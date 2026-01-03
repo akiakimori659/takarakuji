@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>販売管理パネル</title>
+    <style>
+        body { font-family: sans-serif; background: #2c3e50; color: white; padding: 20px; }
+        .container { background: #34495e; padding: 20px; border-radius: 10px; }
+        .stats { font-size: 20px; margin-bottom: 20px; border-bottom: 1px solid #7f8c8d; padding-bottom: 10px; }
+        .grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); 
+            gap: 5px; 
+            max-height: 600px; 
+            overflow-y: auto; 
+            padding: 10px;
+            background: #2c3e50;
+        }
+        .number-box { 
+            padding: 10px 5px; 
+            background: #95a5a6; 
+            color: #2c3e50; 
+            text-align: center; 
+            cursor: pointer; 
+            font-weight: bold;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+        .number-box.sold { background: #27ae60; color: white; }
+        .controls { margin-top: 20px; }
+        button { padding: 10px 20px; cursor: pointer; background: #e67e22; border: none; color: white; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📊 販売管理チェックリスト (1-2000)</h2>
+    <div class="stats">
+        販売数: <span id="soldCount">0</span> / 2000 | 
+        売上: <span id="revenue">0</span> 円
+    </div>
+
+    <div class="grid" id="numberGrid">
+        </div>
+
+    <div class="controls">
+        <button onclick="saveData()">現在の状況を保存(ブラウザ内)</button>
+        <p><small>※ブラウザのキャッシュに保存されます。端末を変えるとリセットされるので注意してください。</small></p>
+    </div>
+</div>
+
+<script>
+    const totalTickets = 2000;
+    const price = 5;
+    let soldNumbers = JSON.parse(localStorage.getItem('lottery_sold_data')) || [];
+
+    const grid = document.getElementById('numberGrid');
+    const soldCountDisplay = document.getElementById('soldCount');
+    const revenueDisplay = document.getElementById('revenue');
+
+    // 初期生成
+    function init() {
+        grid.innerHTML = '';
+        for (let i = 1; i <= totalTickets; i++) {
+            const div = document.createElement('div');
+            div.innerText = i;
+            div.className = 'number-box' + (soldNumbers.includes(i) ? ' sold' : '');
+            div.onclick = () => toggleSold(i, div);
+            grid.appendChild(div);
+        }
+        updateStats();
+    }
+
+    // 販売中/済み の切り替え
+    function toggleSold(num, element) {
+        if (soldNumbers.includes(num)) {
+            soldNumbers = soldNumbers.filter(n => n !== num);
+            element.classList.remove('sold');
+        } else {
+            soldNumbers.push(num);
+            element.classList.add('sold');
+        }
+        updateStats();
+    }
+
+    function updateStats() {
+        soldCountDisplay.innerText = soldNumbers.length;
+        revenueDisplay.innerText = (soldNumbers.length * price).toLocaleString();
+    }
+
+    function saveData() {
+        localStorage.setItem('lottery_sold_data', JSON.stringify(soldNumbers));
+        alert('販売状況を保存しました！');
+    }
+
+    init();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<style>
+    html{
+        font-family: monospace;
+        text-align: center;
+    }
+</style>
+<h1>宝くじ</h1>
+<input type="number" id="num">
+<button id="subm">購入</button>
+<dialog id="d">
+  <h3>この画面を見せてください。</h3>
+  <p id="a"></p>
+  <button onclick="document.getElementById('d').close()">閉じる</button>
+</dialog>
+
+<script>
+    const num = document.querySelector("#num");
+    const subm = document.querySelector("#subm");
+    subm.addEventListener("click", () =>{
+        document.getElementById('d').showModal();
+        document.getElementById('a').innerText = `${num.value}枚購入`;
+    })
+</script>
