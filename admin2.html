@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番号配布システム</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding: 50px 20px; background: #f8f9fa; color: #333; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h1 { font-size: 20px; color: #7f8c8d; }
+        #number-display { font-size: 80px; font-weight: bold; color: #2c3e50; margin: 20px 0; min-height: 120px; display: flex; align-items: center; justify-content: center; }
+        .btn-main { background: #3498db; color: white; border: none; padding: 15px 40px; font-size: 22px; border-radius: 50px; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.95); background: #2980b9; }
+        .stats { margin-top: 20px; font-size: 14px; color: #95a5a6; }
+        .history { margin-top: 20px; text-align: left; font-size: 12px; height: 100px; overflow-y: auto; border-top: 1px solid #eee; padding-top: 10px; }
+        .admin-area { margin-top: 50px; border-top: 1px dashed #ccc; padding-top: 20px; }
+        .btn-reset { background: #95a5a6; color: white; border: none; padding: 5px 15px; font-size: 12px; cursor: pointer; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>クジ番号 発行</h1>
+    
+    <div id="number-display">--</div>
+
+    <button class="btn-main" onclick="getNextNumber()">番号を引く</button>
+
+    <div class="stats">
+        残り: <span id="remaining">2000</span> / 2000
+    </div>
+
+    <div class="history" id="history">
+        履歴: 
+    </div>
+
+    <div class="admin-area">
+        <button class="btn-reset" onclick="resetPool()">全リセット (1番からやり直し)</button>
+    </div>
+</div>
+
+<script>
+    const TOTAL = 2000;
+    // ローカルストレージから「残り番号リスト」を取得。なければ新規作成
+    let pool = JSON.parse(localStorage.getItem('ticket_pool'));
+    let history = JSON.parse(localStorage.getItem('ticket_history')) || [];
+
+    if (!pool) {
+        initPool();
+    }
+
+    function initPool() {
+        pool = Array.from({length: TOTAL}, (_, i) => i + 1);
+        history = [];
+        updateDisplay("--");
+        save();
+    }
+
+    function getNextNumber() {
+        if (pool.length === 0) {
+            alert("すべての番号を配布しきりました！");
+            return;
+        }
+
+        // 残っている番号からランダムにインデックスを選択
+        const randomIndex = Math.floor(Math.random() * pool.length);
+        const pickedNumber = pool.splice(randomIndex, 1)[0];
+
+        // 履歴の先頭に追加
+        history.unshift(pickedNumber);
+        
+        updateDisplay(pickedNumber);
+        save();
+    }
+
+    function updateDisplay(num) {
+        document.getElementById('number-display').innerText = num;
+        document.getElementById('remaining').innerText = pool.length;
+        document.getElementById('history').innerHTML = "履歴: " + history.join(', ');
+    }
+
+    function save() {
+        localStorage.setItem('ticket_pool', JSON.stringify(pool));
+        localStorage.setItem('ticket_history', JSON.stringify(history));
+    }
+
+    function resetPool() {
+        if (confirm("配布状況をリセットして1番からやり直しますか？")) {
+            initPool();
+            location.reload();
+        }
+    }
+
+    // 初回表示用
+    updateDisplay(history.length > 0 ? history[0] : "--");
+</script>
+
+</body>
+</html>
